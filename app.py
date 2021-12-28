@@ -1,4 +1,3 @@
-import json
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -22,15 +21,15 @@ def find_product(prod_name):
 
 @app.route("/product/", methods=["POST"])
 def create_product():
-    product = create_product(request.form["address"], request.form["pk"])
+    product = create_product(request.form["address"], request.form["key"])
     return Web3.toJSON(product)
 
 @app.route("/product/<int:prod_id>/delegate/", methods=["POST"])
 def delegate_product(prod_id):
-    product = delegate_product(prod_id, request.form["address"], request.form["pk"])
+    product = delegate_product(prod_id, request.form["address"], request.form["key"])
     return Web3.toJSON(product)
 
 @app.route("/product/<int:prod_id>/accept/", methods=["POST"])
 def accept_product(prod_id):
-    product = accept_product(prod_id, request.form["address"], request.form["pk"])
+    product = accept_product(prod_id, request.form["address"], request.form["key"])
     return Web3.toJSON(product)
