@@ -14,6 +14,7 @@ flask = "*"
 ipdb = "*"
 pytest = "*"
 black = "*"
+isort = "*"
 
 [requires]
 python_version = "3.9"
