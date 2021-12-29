@@ -29,5 +29,11 @@ polling_new_products()
 ```
 Now create a new product in another console or with the flask api, and see it printed out in the console.
 
+## Run tests
+
+```
+pytest src/tests
+```
+
 #### TODO
 - Dockerize repo
