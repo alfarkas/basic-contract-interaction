@@ -1,4 +1,10 @@
-from src.connection import *
+# deps
+from web3 import exceptions as web3Exceptions
+
+# local
+from src.connection import contract, created_block, w3
+
+from .exceptions import ProductDoesNotExists
 
 
 def send_transaction(transaction, acc_address, key):
@@ -83,7 +89,11 @@ def get_product(product_id):
     :return: product
     :rtype: list
     """
-    return contract.functions.products(product_id).call()
+    try:
+        product = contract.functions.products(product_id).call()
+    except web3Exceptions.ContractLogicError:
+        raise ProductDoesNotExists(product_id)
+    return product
 
 
 def get_products():
