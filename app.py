@@ -7,14 +7,15 @@ from flask import Flask, request
 # local
 from src.exceptions import ProductDoesNotExists
 from src.products import (
-    Web3,
     accept_product,
     delegate_product,
     get_product,
     get_product_by_name,
     get_products,
+    create_product,
 )
 
+from web3 import Web3
 
 app = Flask(__name__)
 
@@ -22,6 +23,7 @@ app = Flask(__name__)
 @app.route("/")
 def products():
     products = get_products()
+    print(products)
     return Web3.toJSON(products)
 
 
@@ -41,8 +43,8 @@ def find_product(prod_name):
 
 
 @app.route("/product/", methods=["POST"])
-def create_product():
-    product = create_product(request.form["address"], request.form["key"])
+def add_product():
+    product = create_product(request.form["name"], request.form["address"], request.form["key"])
     return Web3.toJSON(product)
 
 
