@@ -4,18 +4,20 @@ import json
 # flask
 from flask import Flask, request
 
+# deps
+from web3 import Web3
+
 # local
 from src.exceptions import ProductDoesNotExists
 from src.products import (
     accept_product,
+    create_product,
     delegate_product,
     get_product,
     get_product_by_name,
     get_products,
-    create_product,
 )
 
-from web3 import Web3
 
 app = Flask(__name__)
 
@@ -23,7 +25,6 @@ app = Flask(__name__)
 @app.route("/")
 def products():
     products = get_products()
-    print(products)
     return Web3.toJSON(products)
 
 
