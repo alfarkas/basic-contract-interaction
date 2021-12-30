@@ -1,8 +1,17 @@
+# stdlib
+from unittest.mock import Mock, patch
+
 # deps
 import pytest
 
 # local
-from src.event_subscription import WatchList
+from src.event_subscription import (
+    WatchList,
+    has_min_confirmations,
+    is_transaction_successfull,
+)
+
+from .fixtures import *
 
 
 class TestWatchList:
@@ -34,8 +43,37 @@ class TestWatchList:
         assert subs is not wl._subscribers
 
 
-# def test_is_transaction_successfull(self):
-#    pass
+@pytest.mark.parametrize(
+    "mock_get_transaction, expected",
+    [({"status": 1}, True), ({"status": 0}, False), (None, False)],
+    indirect=["mock_get_transaction"],
+)
+def test_is_transaction_successfull(mock_get_transaction, expected):
+    res = is_transaction_successfull("fake_tx")
+    assert res == expected
 
-# def test_has_min_confirmations(self):
-#    pass
+
+@pytest.mark.parametrize(
+    "mock_min_confirmation_env, mock_get_transaction, mock_transaction_is_successful, expected",
+    [
+        ("3", {"status": 1}, True, True),
+        ("10", {"status": 1}, True, False),
+        ("3", {"status": 1}, False, False),
+    ],
+    indirect=[
+        "mock_min_confirmation_env",
+        "mock_get_transaction",
+        "mock_transaction_is_successful",
+    ],
+)
+@patch("src.event_subscription.w3.eth")
+def test_has_min_confirmations(
+    mock_eth,
+    mock_min_confirmation_env,
+    mock_get_transaction,
+    expected,
+    mock_transaction_is_successful,
+):
+    mock_eth.block_number = 4
+    min_conf = has_min_confirmations(1, "fake-hash")
+    assert min_conf == expected

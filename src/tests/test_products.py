@@ -83,16 +83,16 @@ def test_accept_product(mock_contract, mock_w3, account_1, account_2, new_produc
     assert accepted_product[3] == "0x0000000000000000000000000000000000000000"
 
 
-def test_get_all_products(mock_contract, mock_w3, account_1):
-    create_product("test_product0", account_1.address, account_1.key)
-    create_product("test_product1", account_1.address, account_1.key)
+@pytest.mark.parametrize("new_product", [10], indirect=True)
+def test_get_all_products(mock_contract, mock_w3, account_1, new_product):
+    # new_product("test_product0", account_1.address, account_1.key)
+    # new_product("test_product1", account_1.address, account_1.key)
 
     products = get_products()
-
     for i in range(0, len(products)):
-        assert products[i][0] == "test_product" + str(i)
+        assert products[i][0] == "new_prod_" + str(i)
         assert products[i][1] == 0
         assert products[i][2] == account_1.address
         assert products[i][3] == "0x0000000000000000000000000000000000000000"
 
-    assert len(products) == 2
+    assert len(products) == 10

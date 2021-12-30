@@ -89,15 +89,44 @@ def account_2(w3):
 
 
 @pytest.fixture
-def new_product(product_contract, w3, account_1):
-    tx = product_contract.functions.createProduct("new_prod").buildTransaction(
-        {
-            "from": account_1.address,
-            "gas": 210000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": w3.eth.get_transaction_count(account_1.address),
-        }
-    )
-    signed_tx = w3.eth.account.sign_transaction(tx, account_1.key)
+def new_product(product_contract, w3, account_1, request):
+    def create_product(prod_name="new_prod", *args, **kwargs):
+        tx = product_contract.functions.createProduct(prod_name).buildTransaction(
+            {
+                "from": account_1.address,
+                "gas": 210000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": w3.eth.get_transaction_count(account_1.address),
+            }
+        )
+        signed_tx = w3.eth.account.sign_transaction(tx, account_1.key)
+        return w3.eth.send_raw_transaction(signed_tx.rawTransaction)
 
-    return w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+    if hasattr(request, "param"):
+        return [
+            create_product(account_1=account_1, prod_name=f"new_prod_{i}")
+            for i in range(request.param)
+        ]
+
+    return create_product()
+
+
+@pytest.fixture
+def mock_get_transaction(monkeypatch, w3, request):
+    def mock_return(*args):
+        return request.param
+
+    monkeypatch.setattr("src.event_subscription.w3.eth.get_transaction_receipt", mock_return)
+
+
+@pytest.fixture
+def mock_min_confirmation_env(monkeypatch, request):
+    monkeypatch.setenv("MINIMUM_CONFIRMATION", request.param)
+
+
+@pytest.fixture
+def mock_transaction_is_successful(monkeypatch, request):
+    def mock_return(*args):
+        return request.param
+
+    monkeypatch.setattr("src.event_subscription.is_transaction_successfull", mock_return)

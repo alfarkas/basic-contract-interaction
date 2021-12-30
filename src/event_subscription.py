@@ -66,9 +66,9 @@ def has_min_confirmations(transaction_block_number, tx_hash):
     :return: True or False, if the transaction was successful and the minimum amount of blocks has been processed.
     :rtype: boolean
     """
-    return w3.eth.block_number - transaction_block_number >= os.environ[
-        "MINIMUM_CONFIRMATION"
-    ] and is_transaction_successfull(tx_hash)
+    return w3.eth.block_number - transaction_block_number >= int(
+        os.environ["MINIMUM_CONFIRMATION"]
+    ) and is_transaction_successfull(tx_hash)
 
 
 async def handle_event(event):
