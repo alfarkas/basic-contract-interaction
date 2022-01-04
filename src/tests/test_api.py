@@ -1,7 +1,13 @@
 # local
 from app import app, delegate
+from src.products import (
+    create_product,
+    delegate_product,
+    get_product,
+    get_products,
+)
 from src.tests.fixtures import *
-from src.products import get_product, get_products, create_product, delegate_product
+
 
 client = app.test_client()
 
@@ -38,7 +44,7 @@ def test_create_product_invalid_address(mock_contract, mock_w3, account_1):
         },
     )
     assert response.status_code == 200
-    assert response.get_json() == {'transaction_hash': {'error': 'Invalid address'}}
+    assert response.get_json() == {"transaction_hash": {"error": "Invalid address"}}
 
 
 def test_create_product_invalid_key(mock_contract, mock_w3, account_1):
@@ -51,7 +57,9 @@ def test_create_product_invalid_key(mock_contract, mock_w3, account_1):
         },
     )
     assert response.status_code == 200
-    assert response.get_json() == {'transaction_hash': {'error': 'Something went wrong, try again.'}}
+    assert response.get_json() == {
+        "transaction_hash": {"error": "Something went wrong, try again."}
+    }
 
 
 def test_read_product(mock_contract, mock_w3, account_1):
@@ -61,10 +69,10 @@ def test_read_product(mock_contract, mock_w3, account_1):
     assert response.status_code == 200
     assert response.get_json() == {
         "product": [
-                "test_product_0",
-                0,
-                account_1.address,
-                "0x0000000000000000000000000000000000000000",
+            "test_product_0",
+            0,
+            account_1.address,
+            "0x0000000000000000000000000000000000000000",
         ]
     }
 
@@ -83,22 +91,25 @@ def test_read_products(mock_contract, mock_w3, account_1):
     assert response.status_code == 200
     assert response.get_json() == {
         "products": [
-        [
-            "test_product_0",
-            0,
-            account_1.address,
-            "0x0000000000000000000000000000000000000000",
-        ],
-        [
-            "test_product_1",
-            0,
-            account_1.address,
-            "0x0000000000000000000000000000000000000000",
-        ],
-    ]}
+            [
+                "test_product_0",
+                0,
+                account_1.address,
+                "0x0000000000000000000000000000000000000000",
+            ],
+            [
+                "test_product_1",
+                0,
+                account_1.address,
+                "0x0000000000000000000000000000000000000000",
+            ],
+        ]
+    }
 
 
-def test_delegate_product(product_contract, mock_contract, mock_w3, account_1, account_2, new_product):
+def test_delegate_product(
+    product_contract, mock_contract, mock_w3, account_1, account_2, new_product
+):
     response = client.post(
         "/product/0/delegate/",
         data={
@@ -117,7 +128,9 @@ def test_delegate_product(product_contract, mock_contract, mock_w3, account_1, a
     assert product[3] == account_2.address
 
 
-def test_delegate_product_invalid_address(product_contract, mock_contract, mock_w3, account_1, account_2, new_product):
+def test_delegate_product_invalid_address(
+    product_contract, mock_contract, mock_w3, account_1, account_2, new_product
+):
     response = client.post(
         "/product/0/delegate/",
         data={
@@ -127,10 +140,12 @@ def test_delegate_product_invalid_address(product_contract, mock_contract, mock_
         },
     )
     assert response.status_code == 200
-    assert response.get_json() == {'transaction_hash': {'error': 'Invalid address'}}
+    assert response.get_json() == {"transaction_hash": {"error": "Invalid address"}}
 
 
-def test_delegate_product_invalid_key(product_contract, mock_contract, mock_w3, account_1, account_2, new_product):
+def test_delegate_product_invalid_key(
+    product_contract, mock_contract, mock_w3, account_1, account_2, new_product
+):
 
     response = client.post(
         "/product/0/delegate/",
@@ -141,10 +156,14 @@ def test_delegate_product_invalid_key(product_contract, mock_contract, mock_w3, 
         },
     )
     assert response.status_code == 200
-    assert response.get_json() == {'transaction_hash': {'error': 'Something went wrong, try again.'}}
+    assert response.get_json() == {
+        "transaction_hash": {"error": "Something went wrong, try again."}
+    }
 
 
-def test_delegate_product_invalid_new_address(product_contract, mock_contract, mock_w3, account_1, account_2, new_product):
+def test_delegate_product_invalid_new_address(
+    product_contract, mock_contract, mock_w3, account_1, account_2, new_product
+):
 
     response = client.post(
         "/product/0/delegate/",
@@ -155,7 +174,9 @@ def test_delegate_product_invalid_new_address(product_contract, mock_contract, m
         },
     )
     assert response.status_code == 200
-    assert response.get_json() == {'transaction_hash': {'error': 'Something went wrong, try again.'}}
+    assert response.get_json() == {
+        "transaction_hash": {"error": "Something went wrong, try again."}
+    }
 
 
 def test_accept_product(mock_contract, mock_w3, account_1, account_2):
@@ -189,7 +210,7 @@ def test_accept_product_invalid_address(mock_contract, mock_w3, account_1, accou
         },
     )
     assert response.status_code == 200
-    assert response.get_json() == {'transaction_hash': {'error': 'Invalid address'}}
+    assert response.get_json() == {"transaction_hash": {"error": "Invalid address"}}
 
 
 def test_accept_product_invalid_key(mock_contract, mock_w3, account_1, account_2):
@@ -204,4 +225,6 @@ def test_accept_product_invalid_key(mock_contract, mock_w3, account_1, account_2
         },
     )
     assert response.status_code == 200
-    assert response.get_json() == {'transaction_hash': {'error': 'Something went wrong, try again.'}}
+    assert response.get_json() == {
+        "transaction_hash": {"error": "Something went wrong, try again."}
+    }

@@ -51,7 +51,9 @@ def add():
 
 @app.route("/product/<int:prod_id>/delegate/", methods=["POST"])
 def delegate(prod_id):
-    product = delegate_product(prod_id, request.form["address"], request.form["key"], request.form["new_address"])
+    product = delegate_product(
+        prod_id, request.form["address"], request.form["key"], request.form["new_address"]
+    )
     return {"transaction_hash": json.loads(Web3.toJSON(product))}
 
 
