@@ -17,17 +17,23 @@ def send_transaction(transaction, acc_address, key):
     :param key: private key from the address
     :type key: str
     """
-    tx = transaction.buildTransaction(
-        {
-            "from": acc_address,
-            "gas": 210000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": w3.eth.get_transaction_count(acc_address),
-        }
-    )
-    signed_tx = w3.eth.account.sign_transaction(tx, key)
+    try:
+        tx = transaction.buildTransaction(
+            {
+                "from": acc_address,
+                "gas": 210000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": w3.eth.get_transaction_count(acc_address),
+            }
+        )
+        signed_tx = w3.eth.account.sign_transaction(tx, key)
 
-    hash_tx = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        hash_tx = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+    except web3Exceptions.InvalidAddress:
+        return {"error": "Invalid address"}
+    except Exception as e:
+        print(e)
+        return {"error": "Something went wrong, try again."}
     return hash_tx
 
 

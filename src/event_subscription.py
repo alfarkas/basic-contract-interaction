@@ -82,15 +82,35 @@ async def handle_event(event):
 
 async def log_loop(event_filter, poll_interval):
     while True:
-        for product_created in event_filter.get_new_entries():
-            handle_event(product_created)
+        for event in event_filter.get_new_entries():
+            asyncio.create_task(handle_event(event))
         await asyncio.sleep(poll_interval)
 
 
 def polling_new_products():
     event_filter = contract.events.NewProduct.createFilter(fromBlock="latest")
-    loop = asyncio.get_event_loop()
     try:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(asyncio.gather(log_loop(event_filter, 2)))
+    finally:
+        # close loop to free up system resources
+        loop.close()
+
+
+def polling_delegated_products():
+    event_filter = contract.events.DelegateProduct.createFilter(fromBlock="latest")
+    try:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(asyncio.gather(log_loop(event_filter, 2)))
+    finally:
+        # close loop to free up system resources
+        loop.close()
+
+
+def polling_accepted_products():
+    event_filter = contract.events.AcceptProduct.createFilter(fromBlock="latest")
+    try:
+        loop = asyncio.get_event_loop()
         loop.run_until_complete(asyncio.gather(log_loop(event_filter, 2)))
     finally:
         # close loop to free up system resources

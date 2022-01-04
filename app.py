@@ -25,7 +25,7 @@ app = Flask(__name__)
 @app.route("/")
 def products():
     products = get_products()
-    return Web3.toJSON(products)
+    return {"products": products}
 
 
 @app.route("/product/<int:prod_id>")
@@ -33,29 +33,29 @@ def product(prod_id):
     try:
         product = get_product(prod_id)
     except ProductDoesNotExists:
-        return json.dumps({"error": f"Product {prod_id} does not exists."})
-    return Web3.toJSON(product)
+        return {"error": f"Product {prod_id} does not exists."}
+    return {"product": json.loads(Web3.toJSON(product))}
 
 
 @app.route("/product/<prod_name>")
-def find_product(prod_name):
+def find(prod_name):
     product = get_product_by_name(prod_name)
-    return Web3.toJSON(product)
+    return {"product": json.loads(Web3.toJSON(product))}
 
 
 @app.route("/product/", methods=["POST"])
-def add_product():
+def add():
     product = create_product(request.form["name"], request.form["address"], request.form["key"])
-    return Web3.toJSON(product)
+    return {"transaction_hash": json.loads(Web3.toJSON(product))}
 
 
 @app.route("/product/<int:prod_id>/delegate/", methods=["POST"])
-def delegate_product(prod_id):
-    product = delegate_product(prod_id, request.form["address"], request.form["key"])
-    return Web3.toJSON(product)
+def delegate(prod_id):
+    product = delegate_product(prod_id, request.form["address"], request.form["key"], request.form["new_address"])
+    return {"transaction_hash": json.loads(Web3.toJSON(product))}
 
 
 @app.route("/product/<int:prod_id>/accept/", methods=["POST"])
-def accept_product(prod_id):
+def accept(prod_id):
     product = accept_product(prod_id, request.form["address"], request.form["key"])
-    return Web3.toJSON(product)
+    return {"transaction_hash": json.loads(Web3.toJSON(product))}

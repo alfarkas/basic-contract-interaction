@@ -21,7 +21,7 @@ def w3(tester_provider):
     return Web3(tester_provider)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def mock_w3(monkeypatch, w3):
     monkeypatch.setattr("src.products.w3", w3)
 
@@ -34,7 +34,7 @@ def mock_exception(eth_tester, monkeypatch):
     monkeypatch.setattr("src.products.contract.functions.products", raise_exception_no_product)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def product_contract(eth_tester, w3):
     deploy_address = eth_tester.get_accounts()[0]
     with open("src/contract_abi.json") as contract_file:
@@ -55,7 +55,7 @@ def product_contract(eth_tester, w3):
     return ProductContract(tx_receipt.contractAddress)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def mock_contract(monkeypatch, product_contract):
     monkeypatch.setattr("src.products.contract", product_contract)
 
