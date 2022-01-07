@@ -9,6 +9,7 @@ from src.products import (
     create_product,
     delegate_product,
     get_product,
+    get_product_by_name,
     get_products,
 )
 from src.tests.fixtures import *
@@ -85,9 +86,6 @@ def test_accept_product(mock_contract, mock_w3, account_1, account_2, new_produc
 
 @pytest.mark.parametrize("new_product", [10], indirect=True)
 def test_get_all_products(mock_contract, mock_w3, account_1, new_product):
-    # new_product("test_product0", account_1.address, account_1.key)
-    # new_product("test_product1", account_1.address, account_1.key)
-
     products = get_products()
     for i in range(0, len(products)):
         assert products[i][0] == "new_prod_" + str(i)
@@ -96,3 +94,13 @@ def test_get_all_products(mock_contract, mock_w3, account_1, new_product):
         assert products[i][3] == "0x0000000000000000000000000000000000000000"
 
     assert len(products) == 10
+
+
+@pytest.mark.parametrize("mock_products", [10], indirect=True)
+def test_get_product_by_name(mock_products):
+    products = get_product_by_name("prod_name_5")
+    assert len(products) == 1
+    assert products[0][0] == "prod_name_5"
+    assert products[0][1] == 0
+    assert products[0][2] == "0x1234567890"
+    assert products[0][3] == "0x0987654321"

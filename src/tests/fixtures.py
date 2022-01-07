@@ -1,5 +1,6 @@
 # stdlib
 import json
+import random
 
 # deps
 import pytest
@@ -130,3 +131,24 @@ def mock_transaction_is_successful(monkeypatch, request):
         return request.param
 
     monkeypatch.setattr("src.event_subscription.is_transaction_successfull", mock_return)
+
+
+@pytest.fixture
+def mock_products(monkeypatch, request):
+    addr1 = "0x1234567890"
+    addr2 = "0x0987654321"
+
+    def create_prod(i=0):
+        return [f"prod_name_{i}", 1 if i % 2 == 0 else 0, addr1, addr2]
+
+    if hasattr(request, "param"):
+
+        def mock_return():
+            return [create_prod(i) for i in range(request.param)]
+
+    else:
+
+        def mock_return():
+            return create_prod()
+
+    monkeypatch.setattr("src.products.get_products", mock_return)

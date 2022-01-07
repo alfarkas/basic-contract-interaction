@@ -1,6 +1,6 @@
 # deps
-from web3 import exceptions as web3Exceptions
 from cached_property import cached_property_with_ttl
+from web3 import exceptions as web3Exceptions
 
 # local
 from src.connection import contract, created_block, w3
@@ -102,7 +102,8 @@ def get_product(product_id):
         raise ProductDoesNotExists(product_id)
     return product
 
-#@cached_property_with_ttl(ttl=1)
+
+# @cached_property_with_ttl(ttl=1)
 def get_products():
     """Get all products
 

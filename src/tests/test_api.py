@@ -228,3 +228,10 @@ def test_accept_product_invalid_key(mock_contract, mock_w3, account_1, account_2
     assert response.get_json() == {
         "transaction_hash": {"error": "Something went wrong, try again."}
     }
+
+
+def test_find_product(mock_contract, mock_w3, account_1):
+    create_product("test_product_0", account_1.address, account_1.key)
+    response = client.get("/product/test_product_0")
+    assert response.status_code == 200
+    # assert response.get_json() == {"product": ""}

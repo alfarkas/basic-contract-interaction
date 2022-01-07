@@ -4,7 +4,8 @@ class Product:
         self.status = status
         self.owner = owner
         self.new_owner = new_owner
-        
+
+
 class WatchList:
     _subscribers = []
 
