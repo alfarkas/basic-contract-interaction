@@ -4,6 +4,7 @@ from web3 import exceptions as web3Exceptions
 
 # local
 from src.connection import contract, created_block, w3
+from src.models import Product
 
 from .exceptions import ProductDoesNotExists
 
@@ -100,7 +101,7 @@ def get_product(product_id):
         product = contract.functions.products(product_id).call()
     except web3Exceptions.ContractLogicError:
         raise ProductDoesNotExists(product_id)
-    return product
+    return Product(product[0], product[1], product[2], product[3])
 
 
 # @cached_property_with_ttl(ttl=1)
@@ -108,10 +109,16 @@ def get_products():
     """Get all products
 
     :return: list of products
-    :rtype: list
+    :rtype: list[dict]
     """
     products_amount = contract.functions.size().call()
-    products = [get_product(i) for i in range(products_amount)]
+    products = []
+    for i in range(products_amount):
+        try:
+            products.append(get_product(i).to_dict())
+        except ProductDoesNotExists:
+            print(f"Unable to get product {i}")
+            continue
     return products
 
 
@@ -121,30 +128,30 @@ def get_product_by_name(name):
     :param name: name of the product to search for
     :param type: str
     :return: product event creation that matches the given name
-    :rtype: list[dict]
+    :rtype: list[Product]
     """
     products = get_products()
-    return list(filter(lambda p: p[0] == name, products))
+    return list(filter(lambda p: p["name"] == name, products))
 
 
 def get_delegated_products():
     """Gets products that are currently delegated but not accepted yet.
 
     :return: list of products delegated
-    :rtype: list
+    :rtype: list[Product]
     """
     products = get_products()
-    return list(filter(lambda p: p[1] == 1, products))
+    return list(filter(lambda p: p["status"] == 1, products))
 
 
 def get_accepted_products():
     """Get all accepted product delegations.
 
     :return: list of products accepted
-    :rtype: list
+    :rtype: list[Product]
     """
     products = get_products()
-    return list(filter(lambda p: p[1] == 0 and p[3] != "0x%040d" % 0, products))
+    return list(filter(lambda p: p["status"] == 0 and p["owner"] != "0x%040d" % 0, products))
 
 
 def get_delegated_products_by_owner(owner):
@@ -153,7 +160,7 @@ def get_delegated_products_by_owner(owner):
     :param owner: owner to filter by.
     :type owner: str
     :return: products delegated to the given owner.
-    :rtype: list
+    :rtype: list[Product]
     """
     products = get_products()
-    return list(filter(lambda p: p[3] == owner, products))
+    return list(filter(lambda p: p["new_owner"] == owner, products))

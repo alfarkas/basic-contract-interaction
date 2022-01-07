@@ -6,6 +6,9 @@ import random
 import pytest
 from web3 import EthereumTesterProvider, Web3, exceptions
 
+# local
+from src.models import Product
+
 
 @pytest.fixture
 def tester_provider():
@@ -139,7 +142,7 @@ def mock_products(monkeypatch, request):
     addr2 = "0x0987654321"
 
     def create_prod(i=0):
-        return [f"prod_name_{i}", 1 if i % 2 == 0 else 0, addr1, addr2]
+        return Product(f"prod_name_{i}", 1 if i % 2 == 0 else 0, addr1, addr2).to_dict()
 
     if hasattr(request, "param"):
 

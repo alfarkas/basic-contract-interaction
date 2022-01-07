@@ -34,13 +34,13 @@ def product(prod_id):
         product = get_product(prod_id)
     except ProductDoesNotExists:
         return {"error": f"Product {prod_id} does not exists."}
-    return {"product": json.loads(Web3.toJSON(product))}
+    return {"product": product.to_dict()}
 
 
 @app.route("/product/<prod_name>")
 def find(prod_name):
     product = get_product_by_name(prod_name)
-    return {"product": json.loads(Web3.toJSON(product))}
+    return {"product": product}
 
 
 @app.route("/product/", methods=["POST"])

@@ -31,7 +31,7 @@ def test_create_product(mock_contract, mock_w3, account_1):
 
     all_products = get_products()
     assert len(all_products) == 1
-    assert all_products[0][0] == "test_product"
+    assert all_products[0]["name"] == "test_product"
 
 
 def test_create_product_invalid_address(mock_contract, mock_w3, account_1):
@@ -68,12 +68,12 @@ def test_read_product(mock_contract, mock_w3, account_1):
     response = client.get("/product/0")
     assert response.status_code == 200
     assert response.get_json() == {
-        "product": [
-            "test_product_0",
-            0,
-            account_1.address,
-            "0x0000000000000000000000000000000000000000",
-        ]
+        "product": {
+            "name": "test_product_0",
+            "status": 0,
+            "owner": account_1.address,
+            "new_owner": "0x0000000000000000000000000000000000000000",
+        }
     }
 
 
@@ -91,18 +91,18 @@ def test_read_products(mock_contract, mock_w3, account_1):
     assert response.status_code == 200
     assert response.get_json() == {
         "products": [
-            [
-                "test_product_0",
-                0,
-                account_1.address,
-                "0x0000000000000000000000000000000000000000",
-            ],
-            [
-                "test_product_1",
-                0,
-                account_1.address,
-                "0x0000000000000000000000000000000000000000",
-            ],
+            {
+                "name": "test_product_0",
+                "status": 0,
+                "owner": account_1.address,
+                "new_owner": "0x0000000000000000000000000000000000000000",
+            },
+            {
+                "name": "test_product_1",
+                "status": 0,
+                "owner": account_1.address,
+                "new_owner": "0x0000000000000000000000000000000000000000",
+            },
         ]
     }
 
@@ -123,9 +123,9 @@ def test_delegate_product(
     assert response.get_json()["transaction_hash"].startswith("0x")
 
     product = get_product(0)
-    assert product[0] == "new_prod"
-    assert product[1] == 1
-    assert product[3] == account_2.address
+    assert product.name == "new_prod"
+    assert product.status == 1
+    assert product.new_owner == account_2.address
 
 
 def test_delegate_product_invalid_address(
@@ -195,8 +195,9 @@ def test_accept_product(mock_contract, mock_w3, account_1, account_2):
     assert response.get_json()["transaction_hash"].startswith("0x")
 
     product = get_product(0)
-    assert product[1] == 0
-    assert product[2] == account_2.address
+    assert product.status == 0
+    assert product.owner == account_2.address
+    assert product.new_owner == "0x%040d" % 0
 
 
 def test_accept_product_invalid_address(mock_contract, mock_w3, account_1, account_2, new_product):
@@ -234,4 +235,13 @@ def test_find_product(mock_contract, mock_w3, account_1):
     create_product("test_product_0", account_1.address, account_1.key)
     response = client.get("/product/test_product_0")
     assert response.status_code == 200
-    # assert response.get_json() == {"product": ""}
+    assert response.get_json() == {
+        "product": [
+            {
+                "name": "test_product_0",
+                "status": 0,
+                "owner": account_1.address,
+                "new_owner": "0x%040d" % 0,
+            }
+        ]
+    }

@@ -5,6 +5,17 @@ class Product:
         self.owner = owner
         self.new_owner = new_owner
 
+    def __str__(self):
+        return f"aaa"
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "status": self.status,
+            "owner": self.owner,
+            "new_owner": self.new_owner,
+        }
+
 
 class WatchList:
     _subscribers = []
