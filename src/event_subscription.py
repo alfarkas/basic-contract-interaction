@@ -6,37 +6,7 @@ from web3 import exceptions as web3Exceptions
 
 # local
 from src.connection import *
-
-
-class WatchList:
-    _subscribers = []
-
-    def get_subscribers(self):
-        return self._subscribers.copy()
-
-    def subscribe(self, address):
-        """Add an address to the subscriber list
-
-        :param address: wallet address to add
-        :type address: str
-        """
-        self._subscribers.append(address)
-
-    def unsubscribe(self, address):
-        """Removes an address to the subscriber list.
-
-        :param address: wallet address to remove from the subscribers
-        :type address: str
-        """
-        self._subscribers.remove(address)
-
-    def is_subscribed(self, address):
-        """Returns a boolean indicating if the given address is in the subscription list or not.
-
-        :param address: address to check
-        :type address: str
-        """
-        return address in self._subscribers
+from src.models import WatchList
 
 
 def is_transaction_successfull(tx_hash):
