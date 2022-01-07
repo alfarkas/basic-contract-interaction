@@ -1,5 +1,6 @@
 # deps
 from web3 import exceptions as web3Exceptions
+from cached_property import cached_property_with_ttl
 
 # local
 from src.connection import contract, created_block, w3
@@ -101,7 +102,7 @@ def get_product(product_id):
         raise ProductDoesNotExists(product_id)
     return product
 
-
+#@cached_property_with_ttl(ttl=1)
 def get_products():
     """Get all products
 
@@ -121,46 +122,28 @@ def get_product_by_name(name):
     :return: product event creation that matches the given name
     :rtype: list[dict]
     """
-    event_filter_name = contract.events.NewProduct.createFilter(
-        fromBlock=created_block, argument_filters={"name": name}
-    )
-    return event_filter_name.get_all_entries()
+    products = get_products()
+    return list(filter(lambda p: p[0] == name, products))
 
 
 def get_delegated_products():
     """Gets products that are currently delegated but not accepted yet.
 
     :return: list of products delegated
-    :rtype: list[AttributedDict]
+    :rtype: list
     """
-    delegated_product_event_filter = contract.events.DelegateProduct.createFilter(
-        fromBlock=created_block
-    )
-    delegated_products = delegated_product_event_filter.get_all_entries()
-
-    accepted_product_event_filter = contract.events.AcceptProduct.createFilter(
-        fromBlock=created_block
-    )
-    accepted_products = accepted_product_event_filter.get_all_entries()
-    accepted_prod_ids = [p["args"]["productId"] for p in accepted_products]
-
-    currently_delegated = [
-        p for p in delegated_products if p["args"]["productId"] not in accepted_prod_ids
-    ]
-
-    return currently_delegated
+    products = get_products()
+    return list(filter(lambda p: p[1] == 1, products))
 
 
 def get_accepted_products():
     """Get all accepted product delegations.
 
     :return: list of products accepted
-    :rtype: list[AttributedDict]
+    :rtype: list
     """
-    accepted_product_event_filter = contract.events.AcceptProduct.createFilter(
-        fromBlock=created_block
-    )
-    return accepted_product_event_filter.get_all_entries()
+    products = get_products()
+    return list(filter(lambda p: p[1] == 0 and p[3] != "0x%040d" % 0, products))
 
 
 def get_delegated_products_by_owner(owner):
@@ -169,9 +152,7 @@ def get_delegated_products_by_owner(owner):
     :param owner: owner to filter by.
     :type owner: str
     :return: products delegated to the given owner.
-    :rtype: list[AttributedDict]
+    :rtype: list
     """
-    delegated_product_event_filter_owner = contract.events.DelegateProduct.createFilter(
-        fromBlock=created_block, argument_filters={"newOwner": owner}
-    )
-    return delegated_product_event_filter_owner.get_all_entries()
+    products = get_products()
+    return list(filter(lambda p: p[3] == owner, products))
