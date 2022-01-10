@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 # deps
 import pytest
+from web3 import exceptions as web3Exceptions 
 
 # local
 from src.event_subscription import (
@@ -77,3 +78,12 @@ def test_has_min_confirmations(
     mock_eth.block_number = 4
     min_conf = has_min_confirmations(1, "fake-hash")
     assert min_conf == expected
+
+def test_handle_event():
+    pass
+
+@patch("src.event_subscription.w3.eth.get_transaction_receipt")
+def test_test_is_transaction_successfull_fails_tx(mock_receipt):
+    mock_receipt.side_effect = web3Exceptions.TransactionNotFound
+    res = is_transaction_successfull("fake_tx")
+    assert res is False
