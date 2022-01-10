@@ -138,16 +138,17 @@ def mock_transaction_is_successful(monkeypatch, request):
 
 @pytest.fixture
 def mock_products(monkeypatch, request):
-    addr1 = "0x1234567890"
-    addr2 = "0x0987654321"
-
-    def create_prod(i=0):
+    def create_prod(i=0, addr1="0x%040d" % 0, addr2="0x%040d" % 0):
         return Product(f"prod_name_{i}", 1 if i % 2 == 0 else 0, addr1, addr2).to_dict()
 
     if hasattr(request, "param"):
+        if type(request.param) is list:
+            it, addr1, addr2 = request.param
+        else:
+            it, addr1, addr2 = request.param, "0x%040d" % 0, "0x%040d" % 0
 
         def mock_return():
-            return [create_prod(i) for i in range(request.param)]
+            return [create_prod(i, addr1, addr2) for i in range(it)]
 
     else:
 

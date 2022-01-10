@@ -5,9 +5,6 @@ class Product:
         self.owner = owner
         self.new_owner = new_owner
 
-    def __str__(self):
-        return f"aaa"
-
     def to_dict(self):
         return {
             "name": self.name,

@@ -1,3 +1,6 @@
+# stdlib
+from unittest.mock import MagicMock, patch
+
 # deps
 import pytest
 
@@ -7,6 +10,8 @@ from src.products import (
     accept_product,
     create_product,
     delegate_product,
+    get_delegated_products,
+    get_delegated_products_by_owner,
     get_product,
     get_product_by_name,
     get_products,
@@ -101,5 +106,45 @@ def test_get_product_by_name(mock_products):
     assert len(products) == 1
     assert products[0]["name"] == "prod_name_5"
     assert products[0]["status"] == 0
-    assert products[0]["owner"] == "0x1234567890"
-    assert products[0]["new_owner"] == "0x0987654321"
+    assert products[0]["owner"] == "0x%040d" % 0
+    assert products[0]["new_owner"] == "0x%040d" % 0
+
+
+@patch("src.products.print")
+@patch("src.products.contract.functions.size")
+@patch("src.products.get_product")
+def test_get_products_exception(mock_get_product, mock_size, mock_print):
+    mock_get_product.return_value.to_dict.side_effect = [
+        {"name": "fake-prod-1", "status": 0, "owner": "0x%040d" % 0, "new_owner": "0x%040d" % 0},
+        ProductDoesNotExists,
+    ]
+    msize = MagicMock()
+    msize.call.return_value = 2
+    mock_size.return_value = msize
+    products = get_products()
+    mock_print.assert_called_once_with("Unable to get product 1")
+    assert len(products) == 1
+
+
+@pytest.mark.parametrize("mock_products", [10], indirect=True)
+def test_get_delegated_products(mock_products):
+    delegate_products = get_delegated_products()
+    assert len(delegate_products) == 5
+    for dp in delegate_products:
+        assert dp["status"] == 1
+
+
+@patch("src.products.get_products")
+def test_get_delegated_products_by_owner(mock_products):
+    mock_products.return_value = [
+        {"owner": "0x%040d" % 1},
+        {"owner": "0x%040d" % 1},
+        {"owner": "0x%040d" % 1},
+        {"owner": "0x%040d" % 1},
+        {"owner": "0x%040d" % 0},
+        {"owner": "0x%040d" % 0},
+    ]
+    owner_products = get_delegated_products_by_owner("0x%040d" % 1)
+    assert len(owner_products) == 4
+    for op in owner_products:
+        assert op["owner"] == "0x%040d" % 1

@@ -1,5 +1,5 @@
 # stdlib
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 # deps
 import pytest

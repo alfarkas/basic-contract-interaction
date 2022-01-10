@@ -1,5 +1,4 @@
 # deps
-from cached_property import cached_property_with_ttl
 from web3 import exceptions as web3Exceptions
 
 # local
@@ -104,7 +103,6 @@ def get_product(product_id):
     return Product(product[0], product[1], product[2], product[3])
 
 
-# @cached_property_with_ttl(ttl=1)
 def get_products():
     """Get all products
 
@@ -144,23 +142,13 @@ def get_delegated_products():
     return list(filter(lambda p: p["status"] == 1, products))
 
 
-def get_accepted_products():
-    """Get all accepted product delegations.
-
-    :return: list of products accepted
-    :rtype: list[Product]
-    """
-    products = get_products()
-    return list(filter(lambda p: p["status"] == 0 and p["owner"] != "0x%040d" % 0, products))
-
-
 def get_delegated_products_by_owner(owner):
-    """Filter delegated products by owner
+    """Filter products by owner
 
     :param owner: owner to filter by.
     :type owner: str
-    :return: products delegated to the given owner.
+    :return: products with a given owner.
     :rtype: list[Product]
     """
     products = get_products()
-    return list(filter(lambda p: p["new_owner"] == owner, products))
+    return list(filter(lambda p: p["owner"] == owner, products))
