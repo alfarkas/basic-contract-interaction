@@ -3,7 +3,7 @@ import json
 import os
 
 # flask
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
 
 # deps
 from dotenv import load_dotenv
