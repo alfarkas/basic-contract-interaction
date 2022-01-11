@@ -16,6 +16,14 @@ export FLASK_DEBUG=1
 flask run
 ```
 
+#### Run service
+```
+export FLASK_ENV=development
+export FLASK_DEBUG=1
+export FLASK_APP=service.py
+flask run --host=0.0.0.0 -p 5001
+```
+
 If the provider network is not working, you can change it by creating a .env file from the .env.example and setting up there a different provider (one from mumbai).
 
 # Poll product creation events
