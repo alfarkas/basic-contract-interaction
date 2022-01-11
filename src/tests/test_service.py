@@ -22,11 +22,11 @@ def test_api_sign_tx(mock_sign, monkeypatch):
     monkeypatch.setenv("KEY", "fake-key", prepend=False)
     mock_sign.return_value = SignedTransaction(
         rawTransaction=HexBytes(
-            "0xf8cc808504a817c80083033450946fd6c4126515869850ea5fdb753af31c49b3633b80b86402ec06be000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000096161616161626262620000000000000000000000000000000000000000000000820a96a08067c96529a2cdb4711b731e882f013f5dde7233cc92b6f9ca5f42be1abe6a0ba0088381c5c9a4936765380486a67ce986757547255aa29430612d3155dde9a0bb"
+            "0xf8cc808504a817c8008303345094600757547255aa29430612d3155dde9a0bb"
         ),
-        hash=HexBytes("0xf541db9896ba7b557b863b0ca0d9d15d6bd40648657c212c8835b4880556ddfe"),
-        r=58079419844685367031201585851489716358059542391153495572958807644958600620555,
-        s=3850855411775802046712650899237207108130074652383547787984807264744047747259,
+        hash=HexBytes("0xf541db9896ba7b557b8635b4880556ddfe"),
+        r=5807941984468536703127644958600620555,
+        s=3850855411775802047747259,
         v=2710,
     )
     json_data = (
@@ -53,10 +53,10 @@ def test_api_sign_tx(mock_sign, monkeypatch):
     assert "r" in json_response
     assert "s" in json_response
     assert "v" in json_response
-    # assert response.get_json() == {
-    #    "rawTransaction": ["rawTransaction"],
-    #    "hash": "hash",
-    #    "r": "r",
-    #    "s": "s",
-    #    "v": "v",
-    # }
+    assert json_response["rawTransaction"] == HexBytes(
+            "0xf8cc808504a817c8008303345094600757547255aa29430612d3155dde9a0bb"
+        ).hex()
+    assert json_response["hash"] == HexBytes("0xf541db9896ba7b557b8635b4880556ddfe").hex()
+    assert json_response["r"] == 5807941984468536703127644958600620555
+    assert json_response["s"] == 3850855411775802047747259
+    assert json_response["v"] == 2710
