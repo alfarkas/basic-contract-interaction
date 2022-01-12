@@ -60,3 +60,32 @@ def test_api_sign_tx(mock_sign, monkeypatch):
     assert json_response["r"] == 5807941984468536703127644958600620555
     assert json_response["s"] == 3850855411775802047747259
     assert json_response["v"] == 2710
+
+
+def test_api_sign_tx_no_tx():
+    response = client.get("/", json=json.dumps({}))
+    assert "error" in response.get_json()
+    assert response.get_json()["error"] == "A transaction must be provided"
+
+
+@patch("service.w3.eth.account.sign_transaction")
+def test_api_sign_tx_error(mock_sign, monkeypatch):
+    monkeypatch.setenv("KEY", "fake-key", prepend=False)
+    json_data = (
+        json.dumps(
+            {
+                "value": 0,
+                "chainId": 1337,
+                "from": "0x%040d" % 321,
+                "gas": 210000,
+                "gasPrice": 20000000000,
+                "nonce": 1,
+                "to": "0x%040d" % 123,
+                "data": "0x02ec06be00000000000",
+            }
+        ),
+    )
+    mock_sign.side_effect = Exception("fake error")
+    response = client.get("/", json=json_data[0])
+    assert "error" in response.get_json()
+    assert response.get_json()["error"] == "fake error"
