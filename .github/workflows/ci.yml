@@ -14,7 +14,7 @@ jobs:
     container: python:3.9-slim-buster
     timeout-minutes: 5
     env:
-      FLASK_ENV: developmen
+      FLASK_ENV: development
       FLASK_DEBUG: 1
       OS: ${{ matrix.os }}
       PYTHON: '3.9'
@@ -45,6 +45,7 @@ jobs:
         run: |
           coverage run -m pytest src/tests
           coverage report
+          mkdir ./coverage
           coverage xml -d ./coverage/
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
