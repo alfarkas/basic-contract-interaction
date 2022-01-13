@@ -1,3 +1,6 @@
+[![codecov](https://codecov.io/gh/alfarkas/basic-contract-interaction/branch/main/graph/badge.svg)](https://codecov.io/gh/alfarkas/basic-contract-interaction)
+
+
 # Python/flask sample contract interaction application
 Basic contract interaction with a blockchain contract
 This is just a sample application to interact with a contract in polygon mumbai chain.
