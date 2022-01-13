@@ -9,6 +9,7 @@ web3 = {extras = ["tester"], version = "*"}
 python-dotenv = "*"
 ipython = "*"
 flask = "*"
+coverage = "*"
 
 [dev-packages]
 ipdb = "*"
