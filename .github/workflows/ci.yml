@@ -38,7 +38,6 @@ jobs:
         run: pip3 install pipenv
       # Create and activate environment
       - name: Create environment
-        working-directory: ./src/
         run: pipenv install --dev
       # run tests
       - name: Run tests
@@ -50,6 +49,13 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./
           env_vars: OS,PYTHON
           fail_ci_if_error: true
+          files: ./coverage.xml
+          flags: unittest,integration
+          name: codecov-umbrella
+          path_to_write_report: ./codecov_report.txt
           verbose: true
+          working-directory: ./
+          root_dir: ./
