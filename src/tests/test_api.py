@@ -1,5 +1,7 @@
 # local
+from unittest.mock import MagicMock, patch
 from app import app, delegate
+from src.exceptions import ProductDoesNotExists
 from src.products import (
     create_product,
     delegate_product,
@@ -7,241 +9,157 @@ from src.products import (
     get_products,
 )
 from src.tests.fixtures import *
-
+from hexbytes import HexBytes
 
 client = app.test_client()
 
-
-def test_create_product(mock_contract, mock_w3, account_1):
-    all_products = get_products()
-    assert len(all_products) == 0
-
+@patch("app.create_product")
+def test_create_product(mock_create):
+    hex = HexBytes("0x000546512314847856")
+    mock_create.return_value = hex
     response = client.post(
         "/product/",
         data={
             "name": "test_product",
-            "address": account_1.address,
-            "key": account_1.key.hex(),
+            "address": "0x0000000000000000000000000000000000000111",
         },
     )
 
     assert response.status_code == 200
-    # returns a valid transaction hash
-    assert response.get_json()["transaction_hash"].startswith("0x")
+    assert "transaction_hash" in response.get_json()
+    assert response.get_json()["transaction_hash"] == hex.hex()
 
-    all_products = get_products()
-    assert len(all_products) == 1
-    assert all_products[0]["name"] == "test_product"
-
-
-def test_create_product_invalid_address(mock_contract, mock_w3, account_1):
+@patch("app.create_product")
+def test_create_product_error(mock_create):
+    """
+    If some error is returned by the create product function, this must be pass forward and return to the api caller.
+    """
+    mock_create.return_value = {"error": "Some error"}
     response = client.post(
         "/product/",
         data={
             "name": "test_product",
             "address": "0",
-            "key": account_1.key.hex(),
         },
     )
     assert response.status_code == 200
-    assert response.get_json() == {"transaction_hash": {"error": "Invalid address"}}
+    assert response.get_json() == {"transaction_hash": {"error": "Some error"}}
 
-
-def test_create_product_invalid_key(mock_contract, mock_w3, account_1):
-    response = client.post(
-        "/product/",
-        data={
-            "name": "test_product",
-            "address": account_1.address,
-            "key": "0",
-        },
-    )
-    assert response.status_code == 200
-    assert response.get_json() == {
-        "transaction_hash": {"error": "Something went wrong, try again."}
+@patch("app.get_product")
+def test_read_product(mock_get_prod):
+    prod_data = {
+        "name": "test_product_0",
+        "status": 0,
+        "owner": "0x0000000000000000000000000000000000000111",
+        "new_owner": "0x0000000000000000000000000000000000000000",
     }
-
-
-def test_read_product(mock_contract, mock_w3, account_1):
-    create_product("test_product_0", account_1.address, account_1.key)
-
+    mock_get_prod.return_value.to_dict.return_value = prod_data
     response = client.get("/product/0")
     assert response.status_code == 200
-    assert response.get_json() == {
-        "product": {
-            "name": "test_product_0",
-            "status": 0,
-            "owner": account_1.address,
-            "new_owner": "0x0000000000000000000000000000000000000000",
-        }
-    }
+    assert "product" in response.get_json()
+    assert response.get_json()["product"] == prod_data
+    mock_get_prod.assert_called_once_with(0)
 
-
-def test_read_product_raise_exception(mock_contract, mock_w3, mock_exception):
+@patch("app.get_product")
+def test_read_product_raise_exception(mock_get_prod):
+    mock_get_prod.side_effect = ProductDoesNotExists()
     response = client.get("/product/0")
     assert response.status_code == 200
     assert response.get_json() == {"error": "Product 0 does not exists."}
 
 
-def test_read_products(mock_contract, mock_w3, account_1):
-    create_product("test_product_0", account_1.address, account_1.key)
-    create_product("test_product_1", account_1.address, account_1.key)
-
+@patch("app.get_products")
+def test_read_products(mock_products):
+    prods_data = [
+        {
+            "name": "test_product_0",
+            "status": 0,
+            "owner": "0x0000000000000000000000000000000000000111",
+            "new_owner": "0x0000000000000000000000000000000000000000",
+        },
+        {
+            "name": "test_product_1",
+            "status": 0,
+            "owner": "0x0000000000000000000000000000000000000111",
+            "new_owner": "0x0000000000000000000000000000000000000000",
+        },
+    ]
+    mock_products.return_value = prods_data
     response = client.get("/")
     assert response.status_code == 200
-    assert response.get_json() == {
-        "products": [
-            {
-                "name": "test_product_0",
-                "status": 0,
-                "owner": account_1.address,
-                "new_owner": "0x0000000000000000000000000000000000000000",
-            },
-            {
-                "name": "test_product_1",
-                "status": 0,
-                "owner": account_1.address,
-                "new_owner": "0x0000000000000000000000000000000000000000",
-            },
-        ]
-    }
+    assert "products" in response.get_json()
+    assert response.get_json()["products"] == prods_data
 
 
-def test_delegate_product(
-    product_contract, mock_contract, mock_w3, account_1, account_2, new_product
-):
+@patch("app.delegate_product")
+def test_delegate_product(mock_delegate):
+    hex = HexBytes("0x00982983893492")
+    mock_delegate.return_value = hex
     response = client.post(
         "/product/0/delegate/",
         data={
-            "address": account_1.address,
-            "key": account_1.key.hex(),
-            "new_address": account_2.address,
+            "address": "0x%040d" % 111,
+            "new_address": "0x%040d" % 1,
         },
     )
     assert response.status_code == 200
     # returns a valid transaction hash
-    assert response.get_json()["transaction_hash"].startswith("0x")
-
-    product = get_product(0)
-    assert product.name == "new_prod"
-    assert product.status == 1
-    assert product.new_owner == account_2.address
+    assert response.get_json()["transaction_hash"] == hex.hex()
 
 
-def test_delegate_product_invalid_address(
-    product_contract, mock_contract, mock_w3, account_1, account_2, new_product
-):
+@patch("app.delegate_product")
+def test_delegate_product_error(mock_delegate):
+    mock_delegate.return_value = {"error": "Some error"}
     response = client.post(
         "/product/0/delegate/",
         data={
             "address": "0",
-            "key": account_1.key.hex(),
-            "new_address": account_2.address,
+            "new_address": "0x%040d" % 111,
         },
     )
     assert response.status_code == 200
-    assert response.get_json() == {"transaction_hash": {"error": "Invalid address"}}
+    assert response.get_json() == {"transaction_hash": {"error": "Some error"}}
 
 
-def test_delegate_product_invalid_key(
-    product_contract, mock_contract, mock_w3, account_1, account_2, new_product
-):
-
-    response = client.post(
-        "/product/0/delegate/",
-        data={
-            "address": account_1.address,
-            "key": "0",
-            "new_address": account_2.address,
-        },
-    )
-    assert response.status_code == 200
-    assert response.get_json() == {
-        "transaction_hash": {"error": "Something went wrong, try again."}
-    }
-
-
-def test_delegate_product_invalid_new_address(
-    product_contract, mock_contract, mock_w3, account_1, account_2, new_product
-):
-
-    response = client.post(
-        "/product/0/delegate/",
-        data={
-            "address": account_1.address,
-            "key": account_1.key.hex(),
-            "new_address": "0",
-        },
-    )
-    assert response.status_code == 200
-    assert response.get_json() == {
-        "transaction_hash": {"error": "Something went wrong, try again."}
-    }
-
-
-def test_accept_product(mock_contract, mock_w3, account_1, account_2):
-    create_product("test_product_0", account_1.address, account_1.key)
-    delegate_product(0, account_1.address, account_1.key, account_2.address)
-
+@patch("app.accept_product")
+def test_accept_product(mock_accept):
+    addr = "0x%040d" % 1
+    hex = HexBytes("0x1239234902349012")
+    mock_accept.return_value = hex
     response = client.post(
         "/product/0/accept/",
         data={
-            "address": account_2.address,
-            "key": account_2.key.hex(),
+            "address": addr,
         },
     )
-    assert response.status_code == 200
-    # returns a valid transaction hash
-    assert response.get_json()["transaction_hash"].startswith("0x")
-
-    product = get_product(0)
-    assert product.status == 0
-    assert product.owner == account_2.address
-    assert product.new_owner == "0x%040d" % 0
+    mock_accept.assert_called_once_with(0, addr)
+    assert "transaction_hash" in response.get_json()
+    assert response.get_json()["transaction_hash"] == hex.hex()
 
 
-def test_accept_product_invalid_address(mock_contract, mock_w3, account_1, account_2, new_product):
-    delegate_product(0, account_1.address, account_1.key, account_2.address)
-
+@patch("app.accept_product")
+def test_accept_product_error(mock_accept):
+    mock_accept.return_value = {"error": "Some error"}
     response = client.post(
         "/product/0/accept/",
         data={
             "address": "0",
-            "key": account_2.key.hex(),
         },
     )
     assert response.status_code == 200
-    assert response.get_json() == {"transaction_hash": {"error": "Invalid address"}}
+    assert response.get_json() == {"transaction_hash": {"error": "Some error"}}
 
 
-def test_accept_product_invalid_key(mock_contract, mock_w3, account_1, account_2):
-    create_product("test_product_0", account_1.address, account_1.key)
-    delegate_product(0, account_1.address, account_1.key, account_2.address)
-
-    response = client.post(
-        "/product/0/accept/",
-        data={
-            "address": account_2.address,
-            "key": "0",
-        },
-    )
-    assert response.status_code == 200
-    assert response.get_json() == {
-        "transaction_hash": {"error": "Something went wrong, try again."}
+@patch("app.get_product_by_name")
+def test_find_product(mock_find_prod):
+    prod_data = {
+        "name": "test_product_0",
+        "status": 0,
+        "owner": "0x%040d" % 111,
+        "new_owner": "0x%040d" % 0,
     }
-
-
-def test_find_product(mock_contract, mock_w3, account_1):
-    create_product("test_product_0", account_1.address, account_1.key)
+    mock_find_prod.return_value = prod_data
     response = client.get("/product/test_product_0")
     assert response.status_code == 200
-    assert response.get_json() == {
-        "product": [
-            {
-                "name": "test_product_0",
-                "status": 0,
-                "owner": account_1.address,
-                "new_owner": "0x%040d" % 0,
-            }
-        ]
-    }
+    assert response.get_json() == {"product": prod_data}
+    mock_find_prod.assert_called_once_with("test_product_0")
