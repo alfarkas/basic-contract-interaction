@@ -19,6 +19,8 @@ jobs:
       OS: ${{ matrix.os }}
       PYTHON: '3.9'
     steps:
+      - name: update dependencies
+        run: apt-get update && apt-get -yq install build-essential libssl-dev swig
       - uses: actions/checkout@v2
       - name: Cache pip and pipenv
         uses: actions/cache@v2
