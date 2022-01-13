@@ -39,7 +39,7 @@ jobs:
       # Create and activate environment
       - name: Create environment
         working-directory: ./src/
-        run: pipenv install
+        run: pipenv install --dev
       # run tests
       - name: Run tests
         run: |
