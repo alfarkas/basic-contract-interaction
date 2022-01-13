@@ -10,6 +10,15 @@ from web3 import EthereumTesterProvider, Web3, exceptions
 from src.models import Product
 
 
+class MockResponse:
+    def __init__(self, json_data, status_code):
+        self.json_data = json_data
+        self.status_code = status_code
+
+    def json(self):
+        return self.json_data
+
+
 @pytest.fixture
 def tester_provider():
     return EthereumTesterProvider()
@@ -156,3 +165,12 @@ def mock_products(monkeypatch, request):
             return create_prod()
 
     monkeypatch.setattr("src.products.get_products", mock_return)
+
+
+@pytest.fixture
+def mock_request(w3, monkeypatch, request, account_1):
+    def mock_return(*args, **kwargs):
+        signed = w3.eth.account.sign_transaction(json.loads(kwargs["json"]), account_1.key.hex())
+        return MockResponse({"rawTransaction": signed["rawTransaction"].hex()}, 200)
+
+    monkeypatch.setattr("src.products.requests.request", mock_return)

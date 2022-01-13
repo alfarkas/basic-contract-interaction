@@ -56,6 +56,7 @@ async def log_loop(event_filter, poll_interval):
             asyncio.create_task(handle_event(event))
         await asyncio.sleep(poll_interval)
 
+
 def listen_event(filter):
     event_filter = filter.createFilter(fromBlock="latest")
     asyncio.set_event_loop(asyncio.new_event_loop())
@@ -64,6 +65,7 @@ def listen_event(filter):
         loop.run_until_complete(asyncio.gather(log_loop(event_filter, 2)))
     finally:
         loop.close()
+
 
 def polling_new_products():
     event_type = contract.events.NewProduct

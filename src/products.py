@@ -40,10 +40,9 @@ def send_transaction(transaction, acc_address):
             headers={"content-type": "application/json"},
             json=json.dumps(tx),
         ).json()
-
         hash_tx = w3.eth.send_raw_transaction(signed_tx["rawTransaction"])
     except Exception as e:
-        print(e)
+        print(e.args[0])
         return {"error": "Something went wrong, try again."}
     return hash_tx
 

@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 # deps
 import pytest
+from web3 import exceptions as web3Exceptions
 
 # local
 from src.exceptions import ProductDoesNotExists
@@ -15,12 +16,31 @@ from src.products import (
     get_product,
     get_product_by_name,
     get_products,
+    send_transaction,
 )
 from src.tests.fixtures import *
 
 
-def test_create_product(product_contract, mock_contract, mock_w3, account_1):
-    create_product("prod_1", account_1.address, account_1.key)
+def test_send_transaction_invalid_addr(mock_w3):
+    mock_build_tx = MagicMock()
+    ret = send_transaction(mock_build_tx, "fake-address")
+    assert ret == {"error": "Invalid address"}
+
+
+@patch("src.products.w3.eth.get_transaction_count")
+@patch("src.products.print")
+@patch("src.products.requests.request")
+def test_send_transaction_request_error(mock_request, mock_print, mock_get_txc):
+    mock_build_tx = MagicMock()
+    mock_build_tx.buildTransaction.return_value = {"rawTransaction": "fake tx"}
+    mock_request.side_effect = Exception("Some exception")
+    ret = send_transaction(mock_build_tx, "fake-address")
+    assert ret == {"error": "Something went wrong, try again."}
+    mock_print.assert_called_once_with("Some exception")
+
+
+def test_create_product(mock_request, product_contract, mock_contract, mock_w3, account_1):
+    create_product("prod_1", account_1.address)
     # get the created product
     created_product = product_contract.functions.products(0).call()
 
@@ -44,16 +64,18 @@ def test_get_product_raise_exception(mock_exception):
         get_product(0)
 
 
-def test_account_cannot_create_more_than_eleven_products(mock_contract, mock_w3, account_1):
+def test_account_cannot_create_more_than_eleven_products(
+    mock_request, mock_contract, mock_w3, account_1
+):
     for i in range(12):
-        create_product("test_product", account_1.address, account_1.key)
+        create_product("test_product", account_1.address)
 
     products = get_products()
     assert len(products) == 11
 
 
 def test_delegate_product(
-    product_contract, mock_contract, mock_w3, account_1, account_2, new_product
+    mock_request, product_contract, mock_contract, mock_w3, account_1, account_2, new_product
 ):
     # get the created product
     created_product = get_product(0)
@@ -61,7 +83,7 @@ def test_delegate_product(
     assert created_product.owner == account_1.address
     assert created_product.new_owner == "0x0000000000000000000000000000000000000000"
 
-    delegate_product(0, account_1.address, account_1.key, account_2.address)
+    delegate_product(0, account_1.address, account_2.address)
 
     # get the delegated product
     delegated_product = get_product(0)
@@ -70,22 +92,15 @@ def test_delegate_product(
     assert delegated_product.new_owner == account_2.address
 
 
-def test_accept_product(mock_contract, mock_w3, account_1, account_2, new_product):
-    delegate_product(0, account_1.address, account_1.key, account_2.address)
-    # get the delegated product
-    delegated_product = get_product(0)
-    assert delegated_product.status == 1
-    assert delegated_product.owner == account_1.address
-    assert delegated_product.new_owner == account_2.address
-
-    accept_product(0, account_2.address, account_2.key)
-
-    # get the accepted product
-    accepted_product = get_product(0)
-
-    assert accepted_product.status == 0
-    assert accepted_product.owner == account_2.address
-    assert accepted_product.new_owner == "0x0000000000000000000000000000000000000000"
+@patch("src.products.send_transaction")
+@patch("src.products.contract.functions.acceptProduct")
+def test_accept_product(mock_accept, mock_send_tx):
+    tx = "fake-tx"
+    addr = "0x%040d" % 1
+    mock_accept.return_value = tx
+    accept_product(0, addr)
+    mock_accept.assert_called_once_with(0)
+    mock_send_tx.assert_called_once_with(tx, addr)
 
 
 @pytest.mark.parametrize("new_product", [10], indirect=True)

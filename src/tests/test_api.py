@@ -1,17 +1,17 @@
-# local
-from unittest.mock import MagicMock, patch
-from app import app, delegate
-from src.exceptions import ProductDoesNotExists
-from src.products import (
-    create_product,
-    delegate_product,
-    get_product,
-    get_products,
-)
-from src.tests.fixtures import *
+# stdlib
+from unittest.mock import patch
+
+# deps
 from hexbytes import HexBytes
 
+# local
+from app import app
+from src.exceptions import ProductDoesNotExists
+from src.tests.fixtures import *
+
+
 client = app.test_client()
+
 
 @patch("app.create_product")
 def test_create_product(mock_create):
@@ -29,6 +29,7 @@ def test_create_product(mock_create):
     assert "transaction_hash" in response.get_json()
     assert response.get_json()["transaction_hash"] == hex.hex()
 
+
 @patch("app.create_product")
 def test_create_product_error(mock_create):
     """
@@ -45,6 +46,7 @@ def test_create_product_error(mock_create):
     assert response.status_code == 200
     assert response.get_json() == {"transaction_hash": {"error": "Some error"}}
 
+
 @patch("app.get_product")
 def test_read_product(mock_get_prod):
     prod_data = {
@@ -59,6 +61,7 @@ def test_read_product(mock_get_prod):
     assert "product" in response.get_json()
     assert response.get_json()["product"] == prod_data
     mock_get_prod.assert_called_once_with(0)
+
 
 @patch("app.get_product")
 def test_read_product_raise_exception(mock_get_prod):

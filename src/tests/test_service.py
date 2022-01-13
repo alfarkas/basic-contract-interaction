@@ -53,9 +53,10 @@ def test_api_sign_tx(mock_sign, monkeypatch):
     assert "r" in json_response
     assert "s" in json_response
     assert "v" in json_response
-    assert json_response["rawTransaction"] == HexBytes(
-            "0xf8cc808504a817c8008303345094600757547255aa29430612d3155dde9a0bb"
-        ).hex()
+    assert (
+        json_response["rawTransaction"]
+        == HexBytes("0xf8cc808504a817c8008303345094600757547255aa29430612d3155dde9a0bb").hex()
+    )
     assert json_response["hash"] == HexBytes("0xf541db9896ba7b557b8635b4880556ddfe").hex()
     assert json_response["r"] == 5807941984468536703127644958600620555
     assert json_response["s"] == 3850855411775802047747259
