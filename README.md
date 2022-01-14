@@ -8,31 +8,41 @@ This is just a sample application to interact with a contract in polygon mumbai 
 This is not intended to be used in production, if you do, you'll risk your self and other to expose their private keys.
 
 # Setup
-```
-pipenv shell
-pipenv install
-```
-You can now just go into the python console inside the environment and try the functions by them self or, you can run the flask app to try it with a rest api.
-```
-export FLASK_ENV=development
-export FLASK_DEBUG=1
-flask run
+## Docker and Docker Compose installation
+
+Install Docker:
+
+- `https://docs.docker.com/install/`
+
+After install Docker, proceed to install Docker Compose:
+
+- `https://docs.docker.com/compose/install/`
+
+## Build image
+```bash
+docker-compose -f docker-compose.yml build
 ```
 
-#### Run service
+## Project configuration
+Copy the `.env.example` and complete it with your secrets.
+```bash
+cp .env.example .env
 ```
-export FLASK_ENV=development
-export FLASK_DEBUG=1
-export FLASK_APP=service.py
-flask run --host=0.0.0.0 -p 5001
-```
+Replace any value if needed.
 
-If the provider network is not working, you can change it by creating a .env file from the .env.example and setting up there a different provider (one from mumbai).
+## Run
+```bash
+docker-compose -f docker-compose.yml up -d
+```
+Stop
+
+```bash
+docker-compose -f docker-compose.yml down
+```
 
 # Poll product creation events
-```
-pipenv shell
-ipython
+```bash
+docker exec -ti api ipython
 ```
 ```python
 from src.event_subscription import polling_new_products
@@ -43,8 +53,5 @@ Now create a new product in another console or with the flask api, and see it pr
 ## Run tests
 
 ```
-pytest src/tests
+docker exec -t api pytest src/tests
 ```
-
-#### TODO
-- Dockerize repo
