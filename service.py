@@ -5,16 +5,11 @@ import os
 # flask
 from flask import Flask, jsonify, request
 
-# deps
-from dotenv import load_dotenv
-
 # local
 from src.connection import w3
 
 
 app = Flask(__name__)
-
-load_dotenv()
 
 
 @app.route("/")

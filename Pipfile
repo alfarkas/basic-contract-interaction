@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 requests = "*"
 web3 = {extras = ["tester"], version = "*"}
-python-dotenv = "*"
 ipython = "*"
 flask = "*"
 
