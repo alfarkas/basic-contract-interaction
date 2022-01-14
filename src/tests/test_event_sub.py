@@ -1,5 +1,5 @@
 # stdlib
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 # deps
 import pytest
@@ -8,6 +8,7 @@ from web3 import exceptions as web3Exceptions
 # local
 from src.event_subscription import (
     WatchList,
+    handle_event,
     has_min_confirmations,
     is_transaction_successfull,
     polling_accepted_products,
@@ -106,3 +107,48 @@ def test_polling_delegated_products(mock_listen):
 def test_polling_accepted_products(mock_listen):
     polling_accepted_products()
     mock_listen.assert_called_once()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "mock_event, expected",
+    [
+        [
+            MockEvent(
+                **{
+                    "event": "AcceptProduct",
+                    "newOwner": "own",
+                    "block_num": 1,
+                    "transaction_hash": "0x0000",
+                }
+            ),
+            False,
+        ],
+        [
+            MockEvent(
+                **{
+                    "event": "DelegateProduct",
+                    "newOwner": "own",
+                    "block_num": 1,
+                    "transaction_hash": "0x0000",
+                }
+            ),
+            True,
+        ],
+    ],
+)
+@patch("src.event_subscription.Web3.toJSON")
+@patch("src.event_subscription.has_min_confirmations")
+@patch("src.event_subscription.WatchList.is_subscribed")
+@patch("src.event_subscription.print")
+async def test_handle_event(
+    mock_print, mock_wl_sub, mock_has_min, mock_wtojson, mock_event, expected
+):
+    mock_wl_sub.return_value = True
+    mock_has_min.side_effect = [False, False, True]
+    await handle_event(mock_event)
+    if not expected:
+        mock_wl_sub.assert_not_called()
+    else:
+        mock_print.assert_called_once()
+    mock_has_min.assert_has_calls([call(1, "0x0000"), call(1, "0x0000"), call(1, "0x0000")])

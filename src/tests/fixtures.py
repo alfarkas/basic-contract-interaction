@@ -1,6 +1,7 @@
 # stdlib
 import json
 import random
+from unittest.mock import MagicMock
 
 # deps
 import pytest
@@ -17,6 +18,16 @@ class MockResponse:
 
     def json(self):
         return self.json_data
+
+
+class MockEvent(MagicMock):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.event = kwargs["event"]
+        self.args = MagicMock()
+        self.args.newOwner = kwargs["newOwner"]
+        self.blockNumber = kwargs["block_num"]
+        self.transactionHash = kwargs["transaction_hash"]
 
 
 @pytest.fixture
