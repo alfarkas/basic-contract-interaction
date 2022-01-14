@@ -8,6 +8,7 @@ requests = "*"
 web3 = {extras = ["tester"], version = "*"}
 ipython = "*"
 flask = "*"
+pytest-asyncio = "*"
 
 [dev-packages]
 coverage = "*"
