@@ -4,15 +4,12 @@ import os
 from unittest.mock import patch
 
 # deps
-from dotenv import load_dotenv
 from eth_account.datastructures import SignedTransaction
 from hexbytes import HexBytes
 
 # local
 from service import app
 
-
-load_dotenv()
 
 client = app.test_client()
 
