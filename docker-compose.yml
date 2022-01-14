@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  api:
+    build: .
+    image: contract-api:latest
+    container_name: api
+    command: flask run --host=0.0.0.0
+    restart: on-failure
+    tty: true
+    stdin_open: true
+    depends_on:
+      - service
+    expose:
+      - "5000"
+    ports:
+      - 8000:5000
+    volumes:
+      - ./:/opt/app
+    env_file:
+      - .env
+  service:
+    build: .
+    image: contract-api:latest
+    container_name: service
+    command: flask run --host=0.0.0.0 -p 5001
+    restart: on-failure
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./:/opt/app
+    expose:
+      - "5001"
+    env_file:
+      - .env
+    environment:
+      - FLASK_APP=service.py
