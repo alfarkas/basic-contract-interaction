@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 
 # deps
 import pytest
-from web3 import exceptions as web3Exceptions
 
 # local
 from src.exceptions import ProductDoesNotExists
@@ -30,7 +29,7 @@ def test_send_transaction_invalid_addr(mock_w3):
 @patch("src.products.w3.eth.get_transaction_count")
 @patch("src.products.print")
 @patch("src.products.requests.request")
-def test_send_transaction_request_error(mock_request, mock_print, mock_get_txc):
+def test_send_transaction_request_error(mock_request, mock_print, mock_get_txc, mock_w3):
     mock_build_tx = MagicMock()
     mock_build_tx.buildTransaction.return_value = {"rawTransaction": "fake tx"}
     mock_request.side_effect = Exception("Some exception")
